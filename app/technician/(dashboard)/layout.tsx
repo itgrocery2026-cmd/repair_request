@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { techLogout } from '@/app/actions/auth'
 import { verifyTechnician } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
-import AutoRefresh from '@/app/ui/AutoRefresh'
 
 export default async function TechnicianLayout({ children }: { children: React.ReactNode }) {
   const session = await verifyTechnician()
@@ -30,7 +29,6 @@ export default async function TechnicianLayout({ children }: { children: React.R
           </button>
         </form>
       </header>
-      <AutoRefresh />
       {children}
     </div>
   )

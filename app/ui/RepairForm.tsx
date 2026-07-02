@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState, useCallback, useRef } from 'react'
+import { useActionState, useState, useCallback, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createRepairRequest } from '@/app/actions/repair'
 import type { Branch } from '@/app/generated/prisma/client'
 
@@ -32,9 +33,14 @@ function compressImage(file: File): Promise<File> {
 }
 
 export default function RepairForm({ branches }: { branches: Branch[] }) {
+  const router = useRouter()
   const [state, action, pending] = useActionState(createRepairRequest, null)
   const [previews, setPreviews] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (state && 'success' in state) router.refresh()
+  }, [state, router])
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return

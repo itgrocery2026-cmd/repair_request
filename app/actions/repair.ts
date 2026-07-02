@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/app/lib/prisma'
 import { createSupabaseClient } from '@/app/lib/supabase'
 
@@ -47,5 +48,6 @@ export async function createRepairRequest(_prevState: State, formData: FormData)
     },
   })
 
+  revalidatePath('/')
   return { success: true }
 }
