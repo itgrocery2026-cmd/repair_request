@@ -7,6 +7,14 @@ export function createSupabaseClient() {
   )
 }
 
+// Bypasses RLS — server-only, never expose to the browser.
+function createSupabaseServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
 export async function uploadImagesToBucket(bucket: string, files: File[]): Promise<string[]> {
   const validFiles = files.filter((f) => f.size > 0)
   if (validFiles.length === 0) return []
@@ -37,6 +45,7 @@ export async function deleteStorageObjectsByUrl(bucket: string, urls: string[]) 
 
   if (paths.length === 0) return
 
-  const supabase = createSupabaseClient()
-  await supabase.storage.from(bucket).remove(paths)
+  const supabase = createSupabaseServiceClient()
+  const { error } = await supabase.storage.from(bucket).remove(paths)
+  if (error) console.error('Failed to delete storage objects:', error)
 }
