@@ -57,7 +57,7 @@ model RepairRequest {
   branch        Branch        @relation(fields: [branchId], references: [id])
   location      String
   description   String
-  images        String[]
+  images        RepairImage[]
   reporterName  String
   reporterPhone String?
   status        RequestStatus @default(PENDING)
@@ -72,6 +72,16 @@ model RepairRequest {
   slaLogs       SlaLog[]
 
   @@map("repair_requests")
+}
+
+model RepairImage {
+  id        String        @id @default(uuid())
+  requestId String
+  request   RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime      @default(now())
+
+  @@map("repair_images")
 }
 
 model SlaLog {

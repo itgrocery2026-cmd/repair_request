@@ -36,6 +36,7 @@ export default async function RequestDetailPage({
       branch: true,
       assignedTo: { select: { name: true, employeeId: true } },
       slaLogs: { orderBy: { createdAt: 'desc' } },
+      images: true,
     },
   })
 
@@ -102,11 +103,11 @@ export default async function RequestDetailPage({
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-500 mb-2">รูปภาพประกอบ</p>
             <div className="grid grid-cols-3 gap-2">
-              {request.images.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              {request.images.map((img, i) => (
+                <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={url}
+                    src={img.url}
                     alt={`รูปที่ ${i + 1}`}
                     className="w-full aspect-square object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity"
                   />
