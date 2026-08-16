@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/app/lib/prisma'
 import { verifyAdmin } from '@/app/lib/dal'
 import { RequestStatus } from '@/app/generated/prisma/client'
+import { deleteStorageObjectsByUrl } from '@/app/lib/supabase'
 
 type State = { error: string } | { success: true } | null
 
@@ -60,6 +61,10 @@ export async function approveJob(formData: FormData) {
 export async function deleteRequest(formData: FormData) {
   await verifyAdmin()
   const id = formData.get('id') as string
+
+  const images = await prisma.repairImage.findMany({ where: { requestId: id }, select: { url: true } })
+  await deleteStorageObjectsByUrl('repair-images', images.map((img) => img.url))
+
   await prisma.$transaction([
     prisma.slaLog.deleteMany({ where: { requestId: id } }),
     prisma.repairRequest.deleteMany({ where: { id } }),

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/app/lib/prisma'
 import { verifyTechnician } from '@/app/lib/dal'
 import { RequestStatus } from '@/app/generated/prisma/client'
+import { uploadImagesToBucket } from '@/app/lib/supabase'
 
 export async function claimJob(formData: FormData) {
   const session = await verifyTechnician()
@@ -22,6 +23,7 @@ export async function claimJob(formData: FormData) {
   if (!request || request.status !== RequestStatus.PENDING) return
 
   const deadline = new Date(slaDeadline)
+  const imageUrls = await uploadImagesToBucket('repair-images', formData.getAll('images') as File[])
 
   await prisma.$transaction([
     prisma.repairRequest.update({
@@ -37,6 +39,9 @@ export async function claimJob(formData: FormData) {
     prisma.slaLog.create({
       data: { requestId, deadline, note: slaNote },
     }),
+    ...(imageUrls.length > 0
+      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url })) })]
+      : []),
   ])
 
   revalidatePath('/technician')
@@ -88,16 +93,23 @@ export async function unclaimJob(formData: FormData) {
   redirect('/technician')
 }
 
-export async function markDone(requestId: string) {
+export async function markDone(formData: FormData) {
   const session = await verifyTechnician()
+  const requestId = formData.get('requestId') as string
+  const imageUrls = await uploadImagesToBucket('repair-images', formData.getAll('images') as File[])
 
-  await prisma.repairRequest.update({
-    where: { id: requestId, assignedToId: session.userId },
-    data: {
-      status: RequestStatus.DONE,
-      completedAt: new Date(),
-    },
-  })
+  await prisma.$transaction([
+    prisma.repairRequest.update({
+      where: { id: requestId, assignedToId: session.userId },
+      data: {
+        status: RequestStatus.DONE,
+        completedAt: new Date(),
+      },
+    }),
+    ...(imageUrls.length > 0
+      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url })) })]
+      : []),
+  ])
 
   revalidatePath('/technician')
   redirect('/technician')

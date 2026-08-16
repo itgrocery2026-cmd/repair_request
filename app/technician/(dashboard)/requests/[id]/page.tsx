@@ -128,6 +128,16 @@ export default async function TechRequestDetailPage({
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">แนบรูปภาพ (ไม่บังคับ)</label>
+              <input
+                name="images"
+                type="file"
+                accept="image/*"
+                multiple
+                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
+              />
+            </div>
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -207,12 +217,18 @@ className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outl
             </div>
           )}
 
-          <form
-            action={async () => {
-              'use server'
-              await markDone(id)
-            }}
-          >
+          <form action={markDone} className="space-y-3">
+            <input type="hidden" name="requestId" value={id} />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">แนบรูปภาพหน้างานเสร็จ (ไม่บังคับ)</label>
+              <input
+                name="images"
+                type="file"
+                accept="image/*"
+                multiple
+                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-600 hover:file:bg-green-100"
+              />
+            </div>
             <button
               type="submit"
               className="w-full bg-green-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"

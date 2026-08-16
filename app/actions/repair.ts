@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/app/lib/prisma'
-import { createSupabaseClient } from '@/app/lib/supabase'
+import { uploadImagesToBucket } from '@/app/lib/supabase'
 
 type State = { error: string } | { success: true } | null
 
@@ -17,26 +17,7 @@ export async function createRepairRequest(_prevState: State, formData: FormData)
   }
 
   const files = formData.getAll('images') as File[]
-  const validFiles = files.filter((f) => f.size > 0)
-  const imageUrls: string[] = []
-
-  if (validFiles.length > 0) {
-    const supabase = createSupabaseClient()
-    for (const file of validFiles) {
-      const ext = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const buffer = Buffer.from(await file.arrayBuffer())
-
-      const { error } = await supabase.storage
-        .from('repair-images')
-        .upload(fileName, buffer, { contentType: file.type })
-
-      if (!error) {
-        const { data } = supabase.storage.from('repair-images').getPublicUrl(fileName)
-        imageUrls.push(data.publicUrl)
-      }
-    }
-  }
+  const imageUrls = await uploadImagesToBucket('repair-images', files)
 
   await prisma.repairRequest.create({
     data: {
