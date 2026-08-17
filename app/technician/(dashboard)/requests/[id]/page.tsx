@@ -6,6 +6,7 @@ import { claimJob, markDone, extendSla } from '@/app/actions/technician'
 import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
 import ImageCarousel from '@/app/ui/ImageCarousel'
+import SubmitButton from '@/app/ui/SubmitButton'
 
 export default async function TechRequestDetailPage({
   params,
@@ -133,12 +134,12 @@ export default async function TechRequestDetailPage({
                 className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
               />
             </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+            <SubmitButton
+              pendingText="กำลังบันทึก..."
+              className="w-full bg-blue-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               รับงานนี้
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}
@@ -198,12 +199,12 @@ className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outl
                                 multiple
                                 className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                               />
-                              <button
-                                type="submit"
-                                className="w-full bg-yellow-500 text-white py-2 rounded-md text-sm font-medium hover:bg-yellow-600 transition-colors"
+                              <SubmitButton
+                                pendingText="กำลังบันทึก..."
+                                className="w-full bg-yellow-500 text-white py-2 rounded-md text-sm font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               >
                                 บันทึก
-                              </button>
+                              </SubmitButton>
                             </form>
                           </details>
                         ) : (
@@ -231,12 +232,12 @@ className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outl
                 className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-600 hover:file:bg-green-100"
               />
             </div>
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+            <SubmitButton
+              pendingText="กำลังส่ง..."
+              className="w-full bg-green-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               ส่งงาน
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}
