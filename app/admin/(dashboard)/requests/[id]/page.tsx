@@ -5,6 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
 import { approveJob } from '@/app/actions/admin'
+import ImageCarousel from '@/app/ui/ImageCarousel'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
   PENDING: 'รอดำเนินการ',
@@ -36,7 +37,7 @@ export default async function RequestDetailPage({
       branch: true,
       assignedTo: { select: { name: true, employeeId: true } },
       slaLogs: { orderBy: { createdAt: 'desc' } },
-      images: true,
+      images: { orderBy: { createdAt: 'asc' } },
     },
   })
 
@@ -102,18 +103,7 @@ export default async function RequestDetailPage({
         {request.images.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-500 mb-2">รูปภาพประกอบ</p>
-            <div className="grid grid-cols-3 gap-2">
-              {request.images.map((img, i) => (
-                <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={`รูปที่ ${i + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
+            <ImageCarousel images={request.images} />
           </div>
         )}
       </div>

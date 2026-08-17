@@ -24,7 +24,7 @@ export async function createRepairRequest(_prevState: State, formData: FormData)
       branchId,
       location,
       description,
-      images: { create: imageUrls.map((url) => ({ url })) },
+      images: { create: imageUrls.map((url) => ({ url, label: 'แจ้งซ่อม' })) },
       reporterName,
     },
   })

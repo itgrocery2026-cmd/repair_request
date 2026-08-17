@@ -5,6 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 import { claimJob, markDone, extendSla } from '@/app/actions/technician'
 import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
+import ImageCarousel from '@/app/ui/ImageCarousel'
 
 export default async function TechRequestDetailPage({
   params,
@@ -16,7 +17,12 @@ export default async function TechRequestDetailPage({
 
   const request = await prisma.repairRequest.findUnique({
     where: { id },
-    include: { branch: true, slaLogs: { orderBy: { createdAt: 'desc' } }, assignedTo: { select: { name: true } }, images: true },
+    include: {
+      branch: true,
+      slaLogs: { orderBy: { createdAt: 'desc' } },
+      assignedTo: { select: { name: true } },
+      images: { orderBy: { createdAt: 'asc' } },
+    },
   })
 
   if (!request) notFound()
@@ -87,18 +93,7 @@ export default async function TechRequestDetailPage({
         {request.images.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-500 mb-2">รูปภาพประกอบ</p>
-            <div className="grid grid-cols-3 gap-2">
-              {request.images.map((img, i) => (
-                <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={`รูปที่ ${i + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
+            <ImageCarousel images={request.images} />
           </div>
         )}
       </div>
@@ -195,6 +190,13 @@ className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outl
                                 required
                                 placeholder="เหตุผล (เช่น รออะไหล่)"
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              <input
+                                name="images"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                               />
                               <button
                                 type="submit"

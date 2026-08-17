@@ -79,6 +79,7 @@ model RepairImage {
   requestId String
   request   RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   url       String
+  label     String?
   createdAt DateTime      @default(now())
 
   @@map("repair_images")

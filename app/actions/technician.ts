@@ -24,6 +24,8 @@ export async function claimJob(formData: FormData) {
 
   const deadline = new Date(slaDeadline)
   const imageUrls = await uploadImagesToBucket('repair-images', formData.getAll('images') as File[])
+  const slaCount = await prisma.slaLog.count({ where: { requestId } })
+  const label = `SLA ครั้งที่ ${slaCount + 1}`
 
   await prisma.$transaction([
     prisma.repairRequest.update({
@@ -40,7 +42,7 @@ export async function claimJob(formData: FormData) {
       data: { requestId, deadline, note: slaNote },
     }),
     ...(imageUrls.length > 0
-      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url })) })]
+      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url, label })) })]
       : []),
   ])
 
@@ -57,6 +59,9 @@ export async function extendSla(formData: FormData) {
   if (!slaDeadline || !slaNote) return
 
   const deadline = new Date(slaDeadline)
+  const imageUrls = await uploadImagesToBucket('repair-images', formData.getAll('images') as File[])
+  const slaCount = await prisma.slaLog.count({ where: { requestId } })
+  const label = `SLA ครั้งที่ ${slaCount + 1}`
 
   await prisma.$transaction([
     prisma.repairRequest.update({
@@ -66,6 +71,9 @@ export async function extendSla(formData: FormData) {
     prisma.slaLog.create({
       data: { requestId, deadline, note: slaNote },
     }),
+    ...(imageUrls.length > 0
+      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url, label })) })]
+      : []),
   ])
 
   revalidatePath(`/technician/requests/${requestId}`)
@@ -107,7 +115,7 @@ export async function markDone(formData: FormData) {
       },
     }),
     ...(imageUrls.length > 0
-      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url })) })]
+      ? [prisma.repairImage.createMany({ data: imageUrls.map((url) => ({ requestId, url, label: 'เสร็จสิ้น' })) })]
       : []),
   ])
 
