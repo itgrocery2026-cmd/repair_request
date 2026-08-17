@@ -5,7 +5,7 @@ import { RequestStatus } from '@/app/generated/prisma/client'
 import DeleteRequestButton from '@/app/ui/DeleteRequestButton'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
-  PENDING: 'รอ assign',
+  PENDING: 'รอดำเนินการ',
   ASSIGNED: 'assigned แล้ว',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'ส่งงาน',

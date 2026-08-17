@@ -7,7 +7,7 @@ import { fmtDate } from '@/app/lib/fmt'
 import { approveJob } from '@/app/actions/admin'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
-  PENDING: 'รอช่างรับงาน',
+  PENDING: 'รอดำเนินการ',
   ASSIGNED: 'assigned แล้ว',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'ส่งงาน',

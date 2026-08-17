@@ -5,7 +5,7 @@ import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
-  PENDING: 'รอช่างรับ',
+  PENDING: 'รอดำเนินการ',
   ASSIGNED: 'มีช่างรับแล้ว',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'กำลังซ่อม',
@@ -22,7 +22,7 @@ const STATUS_COLOR: Record<RequestStatus, string> = {
 
 const FILTERS: { label: string; value: string }[] = [
   { label: 'ทั้งหมด', value: '' },
-  { label: 'รอช่างรับ', value: 'PENDING' },
+  { label: 'รอดำเนินการ', value: 'PENDING' },
   { label: 'กำลังซ่อม', value: 'IN_PROGRESS' },
   { label: 'เสร็จสิ้น', value: 'COMPLETED' },
 ]
@@ -77,7 +77,7 @@ export default async function Home({
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { color: 'bg-gray-100 text-gray-600',    dot: 'bg-gray-400',   label: 'รอช่างรับ',  desc: 'คำร้องถูกส่งแล้ว รอช่างเข้ารับงาน' },
+            { color: 'bg-gray-100 text-gray-600',    dot: 'bg-gray-400',   label: 'รอดำเนินการ',  desc: 'คำร้องถูกส่งแล้ว รอช่างเข้ารับงาน' },
             { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500', label: 'กำลังซ่อม', desc: 'ช่างรับงานและกำลังดำเนินการ' },
             { color: 'bg-green-100 text-green-700',   dot: 'bg-green-500',  label: 'เสร็จสิ้น', desc: 'Admin อนุมัติเรียบร้อยแล้ว' },
           ].map(({ color, dot, label, desc }) => (

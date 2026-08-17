@@ -5,7 +5,7 @@ import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
-  PENDING: 'รอช่างรับ',
+  PENDING: 'รอดำเนินการ',
   ASSIGNED: 'มีช่างรับแล้ว',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'กำลังซ่อม',
