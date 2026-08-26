@@ -136,7 +136,7 @@ export default async function TechnicianPage({
                 {r.slaDeadline && (
                   <p className="text-xs text-gray-400 mt-2">
                     กำหนดเสร็จ:{' '}
-                    {r.slaDeadline.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+                    {r.slaDeadline.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' })}
                   </p>
                 )}
               </div>
@@ -160,7 +160,7 @@ export default async function TechnicianPage({
                 <p className="text-sm text-gray-500 mt-0.5">{r.branch.name} · {r.description}</p>
                 <p className="text-xs text-gray-400 mt-2">
                   แจ้งเมื่อ:{' '}
-                  {r.createdAt.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+                  {r.createdAt.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' })}
                 </p>
               </Link>
             ))
@@ -190,7 +190,7 @@ export default async function TechnicianPage({
                 {r.slaDeadline && (
                   <p className="text-xs text-gray-400">
                     กำหนดเสร็จ:{' '}
-                    {r.slaDeadline.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}
+                    {r.slaDeadline.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' })}
                   </p>
                 )}
               </Link>

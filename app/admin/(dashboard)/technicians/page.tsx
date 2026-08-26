@@ -69,7 +69,7 @@ export default async function TechniciansPage() {
                 </td>
                 <td className="px-6 py-3 text-gray-600">{t._count.assignedRequests} งาน</td>
                 <td className="px-6 py-3 text-gray-400">
-                  {t.createdAt.toLocaleDateString('th-TH', { dateStyle: 'medium' })}
+                  {t.createdAt.toLocaleDateString('th-TH', { dateStyle: 'medium', timeZone: 'Asia/Bangkok' })}
                 </td>
                 <td className="px-6 py-3">
                   <TechnicianActions id={t.id} name={t.name} />

@@ -1,6 +1,7 @@
 export function fmtDate(date: Date | null | undefined): string {
   if (!date) return '—'
   return date.toLocaleString('th-TH', {
+    timeZone: 'Asia/Bangkok',
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -88,7 +88,7 @@ export default async function AdminPage() {
             {requests.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-gray-500">
-                  {r.createdAt.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })}
+                  {r.createdAt.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', timeZone: 'Asia/Bangkok' })}
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-900">{r.branch.name}</td>
                 <td className="px-4 py-3 text-gray-700 max-w-[160px] truncate">{r.location}</td>
