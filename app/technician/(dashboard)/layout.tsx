@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { techLogout } from '@/app/actions/auth'
 import { verifyTechnician } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
+import PendingCountAlert from '@/app/ui/PendingCountAlert'
 
 export default async function TechnicianLayout({ children }: { children: React.ReactNode }) {
   const session = await verifyTechnician()
@@ -12,6 +13,10 @@ export default async function TechnicianLayout({ children }: { children: React.R
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PendingCountAlert
+        endpoint="/api/tech/pending-count"
+        messageTemplate="มีงานเข้ามาใหม่ {count} งาน ที่ยังไม่มีช่างรับ"
+      />
       <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-gray-400 hover:text-blue-600 transition-colors">

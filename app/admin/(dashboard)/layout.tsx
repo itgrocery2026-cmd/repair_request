@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import { logout } from '@/app/actions/auth'
+import PendingCountAlert from '@/app/ui/PendingCountAlert'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
+      <PendingCountAlert
+        endpoint="/api/admin/review-count"
+        messageTemplate="มีช่างส่งงานเข้ามาใหม่ {count} งาน รอตรวจ"
+      />
       <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-gray-400 hover:text-blue-600 transition-colors">
