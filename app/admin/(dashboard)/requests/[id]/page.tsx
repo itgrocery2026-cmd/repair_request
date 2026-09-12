@@ -9,7 +9,7 @@ import ImageCarousel from '@/app/ui/ImageCarousel'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
   PENDING: 'รอดำเนินการ',
-  ASSIGNED: 'assigned แล้ว',
+  ASSIGNED: 'มอบหมายแล้ว รอ SLA',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'ส่งงาน',
   COMPLETED: 'เสร็จสิ้น',
@@ -35,8 +35,11 @@ export default async function RequestDetailPage({
     where: { id },
     include: {
       branch: true,
-      assignedTo: { select: { name: true, employeeId: true } },
-      slaLogs: { orderBy: { createdAt: 'desc' } },
+      assignments: {
+        include: { user: { select: { name: true, employeeId: true } } },
+        orderBy: { assignedAt: 'asc' },
+      },
+      slaLogs: { orderBy: { createdAt: 'desc' }, include: { technician: { select: { name: true } } } },
       images: { orderBy: { createdAt: 'asc' } },
     },
   })
@@ -110,44 +113,52 @@ export default async function RequestDetailPage({
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="font-semibold text-gray-900 mb-4">ข้อมูลช่าง</h2>
-        {request.assignedTo ? (
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <dt className="text-gray-500">ช่าง</dt>
-            <dd className="text-gray-900">{request.assignedTo.name}</dd>
+        {request.assignments.length > 0 ? (
+          <div className="space-y-4">
+            <ul className="space-y-2">
+              {request.assignments.map((a) => (
+                <li key={a.userId} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900 font-medium">{a.user.name}</span>
+                  <span className="text-gray-400">{a.user.employeeId}</span>
+                  <span className={a.acknowledgedAt ? 'text-gray-400' : 'text-yellow-600'}>
+                    {a.acknowledgedAt ? `รับทราบเมื่อ ${fmtDate(a.acknowledgedAt)}` : 'ยังไม่รับทราบ'}
+                  </span>
+                </li>
+              ))}
+            </ul>
 
-            <dt className="text-gray-500">รหัสพนักงาน</dt>
-            <dd className="text-gray-900">{request.assignedTo.employeeId}</dd>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm pt-3 border-t border-gray-100">
+              {request.assignedAt && (
+                <>
+                  <dt className="text-gray-500">รับงานเมื่อ</dt>
+                  <dd className="text-gray-900">{fmtDate(request.assignedAt)}</dd>
+                </>
+              )}
 
-            {request.assignedAt && (
-              <>
-                <dt className="text-gray-500">รับงานเมื่อ</dt>
-                <dd className="text-gray-900">{fmtDate(request.assignedAt)}</dd>
-              </>
-            )}
+              {request.slaDeadline && (
+                <>
+                  <dt className="text-gray-500">กำหนดเสร็จ (SLA)</dt>
+                  <dd className={`font-medium ${slaExpired ? 'text-red-600' : slaNear ? 'text-yellow-600' : 'text-gray-900'}`}>
+                    {fmtDate(request.slaDeadline)}
+                  </dd>
+                </>
+              )}
 
-            {request.slaDeadline && (
-              <>
-                <dt className="text-gray-500">กำหนดเสร็จ (SLA)</dt>
-                <dd className={`font-medium ${slaExpired ? 'text-red-600' : slaNear ? 'text-yellow-600' : 'text-gray-900'}`}>
-                  {fmtDate(request.slaDeadline)}
-                </dd>
-              </>
-            )}
+              {request.slaNote && (
+                <>
+                  <dt className="text-gray-500">หมายเหตุ SLA</dt>
+                  <dd className="text-gray-900">{request.slaNote}</dd>
+                </>
+              )}
 
-            {request.slaNote && (
-              <>
-                <dt className="text-gray-500">หมายเหตุ SLA</dt>
-                <dd className="text-gray-900">{request.slaNote}</dd>
-              </>
-            )}
-
-            {request.completedAt && (
-              <>
-                <dt className="text-gray-500">เสร็จเมื่อ</dt>
-                <dd className="text-gray-900">{fmtDate(request.completedAt)}</dd>
-              </>
-            )}
-          </dl>
+              {request.completedAt && (
+                <>
+                  <dt className="text-gray-500">เสร็จเมื่อ</dt>
+                  <dd className="text-gray-900">{fmtDate(request.completedAt)}</dd>
+                </>
+              )}
+            </dl>
+          </div>
         ) : (
           <p className="text-sm text-gray-400">ยังไม่มีช่างรับงาน</p>
         )}
@@ -165,7 +176,10 @@ export default async function RequestDetailPage({
                 <div>
                   <p className="text-gray-900 font-medium">{fmtDate(log.deadline)}</p>
                   {log.note && <p className="text-gray-500">{log.note}</p>}
-                  <p className="text-xs text-gray-400">บันทึกเมื่อ {fmtDate(log.createdAt)}</p>
+                  <p className="text-xs text-gray-400">
+                    บันทึกเมื่อ {fmtDate(log.createdAt)}
+                    {log.technician && ` โดย ${log.technician.name}`}
+                  </p>
                 </div>
               </li>
             ))}

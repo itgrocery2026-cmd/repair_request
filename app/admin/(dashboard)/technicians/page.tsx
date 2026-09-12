@@ -15,7 +15,7 @@ export default async function TechniciansPage() {
       employeeId: true,
       isActive: true,
       createdAt: true,
-      _count: { select: { assignedRequests: true } },
+      _count: { select: { assignments: true } },
     },
   })
 
@@ -67,7 +67,7 @@ export default async function TechniciansPage() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-3 text-gray-600">{t._count.assignedRequests} งาน</td>
+                <td className="px-6 py-3 text-gray-600">{t._count.assignments} งาน</td>
                 <td className="px-6 py-3 text-gray-400">
                   {t.createdAt.toLocaleDateString('th-TH', { dateStyle: 'medium', timeZone: 'Asia/Bangkok' })}
                 </td>

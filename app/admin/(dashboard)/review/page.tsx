@@ -13,7 +13,7 @@ export default async function ReviewPage() {
     orderBy: { updatedAt: 'desc' },
     include: {
       branch: { select: { name: true } },
-      assignedTo: { select: { name: true } },
+      assignments: { include: { user: { select: { name: true } } } },
     },
   })
 
@@ -43,7 +43,7 @@ export default async function ReviewPage() {
                   <p className="text-sm text-gray-600 truncate">{r.description}</p>
                   <div className="flex gap-4 mt-2 text-xs text-gray-400">
                     <span>ผู้แจ้ง: {r.reporterName}</span>
-                    <span>ช่าง: {r.assignedTo?.name ?? '—'}</span>
+                    <span>ช่าง: {r.assignments.map((a) => a.user.name).join(', ') || '—'}</span>
                     {r.slaDeadline && <span>SLA: {fmtDate(r.slaDeadline)}</span>}
                   </div>
                 </div>

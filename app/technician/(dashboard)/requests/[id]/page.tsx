@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { verifyTechnician } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
-import { claimJob, markDone, extendSla } from '@/app/actions/technician'
+import { claimJob, markDone, extendSla, confirmAssignment } from '@/app/actions/technician'
 import { RequestStatus } from '@/app/generated/prisma/client'
 import { fmtDate } from '@/app/lib/fmt'
 import ImageCarousel from '@/app/ui/ImageCarousel'
@@ -20,8 +20,8 @@ export default async function TechRequestDetailPage({
     where: { id },
     include: {
       branch: true,
-      slaLogs: { orderBy: { createdAt: 'desc' } },
-      assignedTo: { select: { name: true } },
+      slaLogs: { orderBy: { createdAt: 'desc' }, include: { technician: { select: { name: true } } } },
+      assignments: { include: { user: { select: { name: true } } }, orderBy: { assignedAt: 'asc' } },
       images: { orderBy: { createdAt: 'asc' } },
     },
   })
@@ -29,7 +29,8 @@ export default async function TechRequestDetailPage({
   if (!request) notFound()
 
   const isPending = request.status === RequestStatus.PENDING
-  const isMyJob = request.assignedToId === session.userId
+  const isMyJob = request.assignments.some((a) => a.userId === session.userId)
+  const needsSlaConfirm = request.status === RequestStatus.ASSIGNED && isMyJob && !request.slaDeadline
   const isInProgress = request.status === RequestStatus.IN_PROGRESS && isMyJob
   const isDone = request.status === RequestStatus.DONE
 
@@ -83,10 +84,10 @@ export default async function TechRequestDetailPage({
           <dt className="text-gray-500">วันที่แจ้ง</dt>
           <dd className="text-gray-900">{fmtDate(request.createdAt)}</dd>
 
-          {request.assignedTo && (
+          {request.assignments.length > 0 && (
             <>
               <dt className="text-gray-500">ช่างรับงาน</dt>
-              <dd className="text-gray-900">{request.assignedTo.name}</dd>
+              <dd className="text-gray-900">{request.assignments.map((a) => a.user.name).join(', ')}</dd>
             </>
           )}
         </dl>
@@ -98,6 +99,51 @@ export default async function TechRequestDetailPage({
           </div>
         )}
       </div>
+
+      {needsSlaConfirm && (
+        <div className="bg-white rounded-lg shadow-sm p-5">
+          <h2 className="font-semibold text-gray-900 mb-4">คุณได้รับมอบหมายงานนี้ — กำหนด SLA</h2>
+          <form action={confirmAssignment} className="space-y-4">
+            <input type="hidden" name="requestId" value={id} />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                กำหนดวันเสร็จ <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="slaDeadline"
+                type="datetime-local"
+                required
+                min={new Date().toISOString().slice(0, 16)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ (เช่น รอหาอะไหล่)</label>
+              <input
+                name="slaNote"
+                placeholder="ไม่บังคับ"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">แนบรูปภาพ (ไม่บังคับ)</label>
+              <input
+                name="images"
+                type="file"
+                accept="image/*"
+                multiple
+                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
+              />
+            </div>
+            <SubmitButton
+              pendingText="กำลังบันทึก..."
+              className="w-full bg-blue-600 text-white py-2.5 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              ยืนยันและกำหนด SLA
+            </SubmitButton>
+          </form>
+        </div>
+      )}
 
       {isPending && (
         <div className="bg-white rounded-lg shadow-sm p-5">
@@ -211,7 +257,10 @@ className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outl
                           <p className="font-medium text-gray-900">{fmtDate(log.deadline)}</p>
                         )}
                         {log.note && <p className="text-gray-500 mt-0.5">{log.note}</p>}
-                        <p className="text-xs text-gray-400 mt-0.5">บันทึกเมื่อ {fmtDate(log.createdAt)}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          บันทึกเมื่อ {fmtDate(log.createdAt)}
+                          {log.technician && ` โดย ${log.technician.name}`}
+                        </p>
                       </div>
                     </li>
                   )

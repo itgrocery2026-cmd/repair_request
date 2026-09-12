@@ -41,8 +41,37 @@ export async function resetTechnicianPassword(formData: FormData) {
 export async function deleteTechnician(formData: FormData) {
   await verifyAdmin()
   const id = formData.get('id') as string
+
+  const activeAssignment = await prisma.jobAssignment.findFirst({
+    where: { userId: id, request: { status: { notIn: [RequestStatus.DONE, RequestStatus.COMPLETED] } } },
+  })
+  if (activeAssignment) return
+
   await prisma.user.delete({ where: { id } })
   revalidatePath('/admin/technicians')
+}
+
+export async function assignTechnician(formData: FormData) {
+  await verifyAdmin()
+  const requestId = formData.get('requestId') as string
+  const userId = formData.get('userId') as string
+
+  if (!requestId || !userId) return
+
+  await prisma.$transaction(async (tx) => {
+    await tx.jobAssignment.upsert({
+      where: { requestId_userId: { requestId, userId } },
+      create: { requestId, userId },
+      update: {},
+    })
+
+    await tx.repairRequest.updateMany({
+      where: { id: requestId, status: RequestStatus.PENDING },
+      data: { status: RequestStatus.ASSIGNED, assignedAt: new Date() },
+    })
+  })
+
+  revalidatePath('/admin')
 }
 
 export async function approveJob(formData: FormData) {

@@ -35,7 +35,10 @@ export default async function TechnicianPage({
   const [myJobs, pendingJobs, teamJobs] = await Promise.all([
     activeTab === 'mine'
       ? prisma.repairRequest.findMany({
-          where: { assignedToId: session.userId, status: { notIn: [RequestStatus.DONE, RequestStatus.COMPLETED] } },
+          where: {
+            assignments: { some: { userId: session.userId } },
+            status: { notIn: [RequestStatus.DONE, RequestStatus.COMPLETED] },
+          },
           orderBy: { assignedAt: 'desc' },
           include: { branch: { select: { name: true } } },
         })
@@ -50,13 +53,13 @@ export default async function TechnicianPage({
     activeTab === 'team'
       ? prisma.repairRequest.findMany({
           where: {
-            assignedToId: { not: session.userId },
             status: { in: [RequestStatus.IN_PROGRESS, RequestStatus.ASSIGNED] },
+            NOT: { assignments: { some: { userId: session.userId } } },
           },
           orderBy: { assignedAt: 'desc' },
           include: {
             branch: { select: { name: true } },
-            assignedTo: { select: { name: true } },
+            assignments: { include: { user: { select: { name: true } } } },
           },
         })
       : [],
@@ -68,7 +71,7 @@ export default async function TechnicianPage({
     where: {
       OR: [
         { status: RequestStatus.PENDING },
-        { assignedToId: session.userId, status: { not: RequestStatus.DONE } },
+        { assignments: { some: { userId: session.userId } }, status: { not: RequestStatus.DONE } },
       ],
     },
   })
@@ -186,7 +189,7 @@ export default async function TechnicianPage({
                   </div>
                   <SlaChip deadline={r.slaDeadline} status={r.status} />
                 </div>
-                <p className="text-xs text-gray-400 mt-2">ช่าง: {r.assignedTo?.name}</p>
+                <p className="text-xs text-gray-400 mt-2">ช่าง: {r.assignments.map((a) => a.user.name).join(', ')}</p>
                 {r.slaDeadline && (
                   <p className="text-xs text-gray-400">
                     กำหนดเสร็จ:{' '}

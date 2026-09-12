@@ -32,7 +32,7 @@ export default async function PublicRequestDetailPage({
     where: { id },
     include: {
       branch: true,
-      assignedTo: { select: { name: true } },
+      assignments: { include: { user: { select: { name: true } } } },
       images: { orderBy: { createdAt: 'asc' } },
     },
   })
@@ -96,10 +96,10 @@ export default async function PublicRequestDetailPage({
             <dt className="text-gray-500">วันที่แจ้ง</dt>
             <dd className="text-gray-900">{fmtDate(request.createdAt)}</dd>
 
-            {request.assignedTo && (
+            {request.assignments.length > 0 && (
               <>
                 <dt className="text-gray-500">ช่างผู้รับงาน</dt>
-                <dd className="text-gray-900">{request.assignedTo.name}</dd>
+                <dd className="text-gray-900">{request.assignments.map((a) => a.user.name).join(', ')}</dd>
               </>
             )}
 

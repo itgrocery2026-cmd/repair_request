@@ -34,7 +34,8 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  assignedRequests RepairRequest[]
+  assignments JobAssignment[]
+  slaLogs     SlaLog[]
 
   @@map("users")
 }
@@ -61,8 +62,6 @@ model RepairRequest {
   reporterName  String
   reporterPhone String?
   status        RequestStatus @default(PENDING)
-  assignedToId  String?
-  assignedTo    User?         @relation(fields: [assignedToId], references: [id])
   assignedAt    DateTime?
   slaDeadline   DateTime?
   slaNote       String?
@@ -70,6 +69,7 @@ model RepairRequest {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   slaLogs       SlaLog[]
+  assignments   JobAssignment[]
 
   @@map("repair_requests")
 }
@@ -86,12 +86,27 @@ model RepairImage {
 }
 
 model SlaLog {
-  id        String        @id @default(uuid())
-  requestId String
-  request   RepairRequest @relation(fields: [requestId], references: [id])
-  deadline  DateTime
-  note      String?
-  createdAt DateTime      @default(now())
+  id           String        @id @default(uuid())
+  requestId    String
+  request      RepairRequest @relation(fields: [requestId], references: [id])
+  deadline     DateTime
+  note         String?
+  createdAt    DateTime      @default(now())
+  technicianId String?
+  technician   User?         @relation(fields: [technicianId], references: [id])
 
   @@map("sla_logs")
+}
+
+model JobAssignment {
+  id             String        @id @default(uuid())
+  requestId      String
+  request        RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedAt     DateTime      @default(now())
+  acknowledgedAt DateTime?
+
+  @@unique([requestId, userId])
+  @@map("job_assignments")
 }

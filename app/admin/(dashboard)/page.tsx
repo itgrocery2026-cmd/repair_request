@@ -3,10 +3,11 @@ import { verifyAdmin } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
 import { RequestStatus } from '@/app/generated/prisma/client'
 import DeleteRequestButton from '@/app/ui/DeleteRequestButton'
+import AssignTechnicianButton from '@/app/ui/AssignTechnicianButton'
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
   PENDING: 'รอดำเนินการ',
-  ASSIGNED: 'assigned แล้ว',
+  ASSIGNED: 'มอบหมายแล้ว รอ SLA',
   IN_PROGRESS: 'กำลังซ่อม',
   DONE: 'ส่งงาน',
   COMPLETED: 'เสร็จสิ้น',
@@ -33,13 +34,20 @@ function slaChip(deadline: Date | null, status: RequestStatus) {
 export default async function AdminPage() {
   await verifyAdmin()
 
-  const requests = await prisma.repairRequest.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: {
-      branch: { select: { name: true } },
-      assignedTo: { select: { name: true } },
-    },
-  })
+  const [requests, activeTechnicians] = await Promise.all([
+    prisma.repairRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        branch: { select: { name: true } },
+        assignments: { include: { user: { select: { name: true } } }, orderBy: { assignedAt: 'asc' } },
+      },
+    }),
+    prisma.user.findMany({
+      where: { role: 'TECHNICIAN', isActive: true },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, employeeId: true },
+    }),
+  ])
 
   const counts = {
     total: requests.length,
@@ -99,7 +107,9 @@ export default async function AdminPage() {
                   </span>
                   {slaChip(r.slaDeadline, r.status)}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{r.assignedTo?.name ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {r.assignments.map((a) => a.user.name).join(', ') || '—'}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Link
@@ -108,6 +118,13 @@ export default async function AdminPage() {
                     >
                       ดูรายละเอียด
                     </Link>
+                    {r.status !== RequestStatus.DONE && r.status !== RequestStatus.COMPLETED && (
+                      <AssignTechnicianButton
+                        requestId={r.id}
+                        technicians={activeTechnicians}
+                        alreadyAssignedIds={r.assignments.map((a) => a.userId)}
+                      />
+                    )}
                     <DeleteRequestButton id={r.id} />
                   </div>
                 </td>
